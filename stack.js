@@ -181,10 +181,21 @@ class dspp {
       return obj;
     };
 
-    for(let [task_name, task] of Object.entries(out.tasks || {}))
-      out.tasks[task_name]  = walk(task, v =>  replaceEnv(v, {...task, task_name, service_name : task_name}));
+    for(let [task_name, task] of Object.entries(out.tasks || {})) {
+      if(!task.image)
+        console.error("Missing image for task '%s'", task_name);
+      if(!task.deploy)
+        console.error("Missing deploy for task '%s'", task_name);
+
+      out.tasks[task_name] = walk(task, v =>  replaceEnv(v, {...task, task_name, service_name : task_name}));
+    }
 
     for(let [service_name, service] of Object.entries(out.services || {})) {
+      if(!service.image)
+        console.error("Missing image for service '%s'", service_name);
+      if(!service.deploy)
+        console.error("Missing deploy for service '%s'", service_name);
+
       service = await processEnv(service);
       out.services[service_name] = walk(service, v =>  replaceEnv(v, {...service, service_name}));
     }
